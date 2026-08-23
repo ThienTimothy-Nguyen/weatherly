@@ -80,15 +80,84 @@ describe("buildDailyForecast", () => {
     ];
 
     expect(buildDailyForecast(list)).toHaveLength(2);
-    buildDailyForecast(list).forEach((item, i) => {
-      expect(item).toEqual(
-        expect.objectContaining({
-          date: list[i].dt_txt.split(" ")[0],
-          tempMin: Math.min(...list.map(entry => entry.main.temp)),
-          tempMax: Math.max(...list.map(entry => entry.main.temp)),
-          description: list[i].weather.description,
-        })
-      );
-    })
+    buildDailyForecast(list).forEach((dateEntry) => {
+      const hourEntries = list.filter(entry => entry.dt_txt.split(" ")[0] === dateEntry.date);
+      const mid = hourEntries[Math.floor(hourEntries.length / 2)];
+
+      expect(dateEntry).toEqual({
+        date: dateEntry.date,
+        tempMin: Math.min(...hourEntries.map(entry => entry.main.temp)),
+        tempMax: Math.max(...hourEntries.map(entry => entry.main.temp)),
+        description: mid.weather[0].description,
+        icon: mid.weather[0].icon,
+      });
+    });
+  });
+
+  it("should return maximum 5 date entries", () => {
+    const list = [
+      {
+        main: { temp: 14.25 },
+        weather: [
+          {
+            description: "broken clouds",
+            icon: "04n"
+          }
+        ],
+        dt_txt: "2026-08-23 21:00:00"
+      },
+      {
+        main: { temp: 16.8 },
+        weather: [
+          {
+            description: "scattered clouds",
+            icon: "03n"
+          }
+        ],
+        dt_txt: "2026-08-24 18:00:00"
+      },
+      {
+        main: { temp: 18.4 },
+        weather: [
+          {
+            description: "clear sky",
+            icon: "01d"
+          }
+        ],
+        dt_txt: "2026-08-25 15:00:00"
+      },
+      {
+        main: { temp: 17.1 },
+        weather: [
+          {
+            description: "light rain",
+            icon: "10d"
+          }
+        ],
+        dt_txt: "2026-08-26 12:00:00"
+      },
+      {
+        main: { temp: 15.6 },
+        weather: [
+          {
+            description: "overcast clouds",
+            icon: "04d"
+          }
+        ],
+        dt_txt: "2026-08-27 09:00:00"
+      },
+      {
+        main: { temp: 19.2 },
+        weather: [
+          {
+            description: "few clouds",
+            icon: "02d"
+          }
+        ],
+        dt_txt: "2026-08-28 06:00:00"
+      }
+    ];
+
+    expect(buildDailyForecast(list)).toHaveLength(5);
   })
 });
