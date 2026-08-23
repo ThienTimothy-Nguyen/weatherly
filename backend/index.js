@@ -7,10 +7,9 @@ dotenv.config();
 
 const API_KEY = process.env.OPENWEATHER_API_KEY;
 const PORT = 3000;
-
 const BASE_URL = "https://api.openweathermap.org/data/2.5";
 
-function sendJSON(res, status, data) {
+export function sendJSON(res, status, data) {
   res.writeHead(status, {
     "Content-Type" : "application/json",
     "Access-Control-Allow-Origin" : "*",
@@ -20,7 +19,7 @@ function sendJSON(res, status, data) {
   res.end(JSON.stringify(data));
 }
 
-function buildDailyForecast(list) {
+export function buildDailyForecast(list) {
   const byDate = {};
 
   list.forEach(entry => {
