@@ -43,7 +43,7 @@ export function buildDailyForecast(list) {
   })
 }
 
-function buildWeatherResponse(current, forecast) {
+export function buildWeatherResponse(current, forecast) {
   return {
     location: {
       name: current.name,

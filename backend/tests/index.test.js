@@ -1,11 +1,8 @@
 import axios from "axios";
 import http from "http";
 import url from "url";
-import dotenv from "dotenv";
 import { it, describe, expect, vi } from "vitest";
-import { buildDailyForecast, sendJSON } from "..";
-
-dotenv.config();
+import { buildDailyForecast, buildWeatherResponse, sendJSON } from "..";
 
 const API_key = process.env.API_key;
 const PORT = 3000;
@@ -80,6 +77,7 @@ describe("buildDailyForecast", () => {
     ];
 
     expect(buildDailyForecast(list)).toHaveLength(2);
+
     buildDailyForecast(list).forEach((dateEntry) => {
       const hourEntries = list.filter(entry => entry.dt_txt.split(" ")[0] === dateEntry.date);
       const mid = hourEntries[Math.floor(hourEntries.length / 2)];
@@ -161,3 +159,110 @@ describe("buildDailyForecast", () => {
     expect(buildDailyForecast(list)).toHaveLength(5);
   })
 });
+
+describe("buildWeatherResponse", () => {
+  const current = {
+    name: "Saigon",
+    sys: { country: "Vietnam" },
+    main: {
+      temp: 75,
+      feels_like: 80,
+      humidity: 25,
+    },
+    weather: [
+      {
+        description: "Best place to visit...",
+        icon: "04n"
+      },
+    ],
+    wind: {
+      speed: 25,
+    }
+  }
+
+  const forecast = {
+    list: [
+      {
+        "main": {
+          "temp": 14.25,
+        },
+        "weather": [
+          {
+            "description": "broken clouds",
+            "icon": "04n"
+          }
+        ],
+        "dt_txt": "2026-08-23 12:00:00"
+      },
+      {
+        "main": {
+          "temp": 16.80,
+        },
+        "weather": [
+          {
+            "description": "scattered clouds",
+            "icon": "03n"
+          }
+        ],
+        "dt_txt": "2026-08-23 18:00:00"
+      },
+      {
+        "main": {
+          "temp": 296.76,
+        },
+        "weather": [
+          {
+            "description": "light rain",
+            "icon": "10d"
+          }
+        ],
+        "dt_txt": "2026-08-31 18:00:00"
+      },
+      {
+        "main": {
+          "temp": 294.50,
+        },
+        "weather": [
+          {
+            "description": "moderate rain",
+            "icon": "10n"
+          }
+        ],
+        "dt_txt": "2026-08-31 21:00:00"
+      }
+    ]
+  };
+
+  it("should return a normalized data in the appropriate format.", () => {
+    expect(buildWeatherResponse(current, forecast)).toEqual({
+      location: {
+        name: current.name,
+        country: current.sys.country,
+      }, 
+      current: {
+        temp: current.main.temp,
+        feels_like: current.main.feels_like,
+        description: current.weather[0].description,
+        icon: current.weather[0].icon,
+        humidity: current.main.humidity,
+        windSpeed: current.wind.speed,
+      },
+      forecast: expect.arrayContaining([
+        {
+          date: "2026-08-23",
+          tempMin: 14.25,
+          tempMax: 16.8,
+          description: "scattered clouds",
+          icon: "03n"
+        },
+        {
+          date: "2026-08-31",
+          tempMin: 294.5,
+          tempMax: 296.76,
+          description: "moderate rain",
+          icon: "10n"
+        }
+      ]),
+    })
+  });
+})
